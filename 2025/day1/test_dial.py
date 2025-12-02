@@ -8,6 +8,7 @@ class TestDial(unittest.TestCase):
     def setUp(self):
         """Reset the dial before each test"""
         dial.currentNumber = 0
+        dial.currentTimesWePassedZero = 0
         dial.currentTimesWeStopAtZero = 0
     
     def test_turnDial_forward(self):
@@ -87,54 +88,65 @@ The dial is rotated L82 to point at 32.
         # L68 from 50 -> 82 (50 - 68 = -18, wraps to 82)
         result = dial.turnDialFromString("L68")
         self.assertEqual(result, 82, "L68 from 50 should be 82")
+        self.assertEqual(dial.currentTimesWePassedZero, 1, "Should pass 0 once when wrapping backward")
         self.assertEqual(dial.currentTimesWeStopAtZero, 0, "Should not stop at 0")
         
         # L30 from 82 -> 52 (82 - 30 = 52, no wrap)
         result = dial.turnDialFromString("L30")
         self.assertEqual(result, 52, "L30 from 82 should be 52")
+        self.assertEqual(dial.currentTimesWePassedZero, 1, "Should not pass 0")
         self.assertEqual(dial.currentTimesWeStopAtZero, 0, "Should not stop at 0")
         
         # R48 from 52 -> 0 (52 + 48 = 100, wraps to 0)
         result = dial.turnDialFromString("R48")
         self.assertEqual(result, 0, "R48 from 52 should be 0")
+        self.assertEqual(dial.currentTimesWePassedZero, 2, "Should pass 0 once when wrapping forward")
         self.assertEqual(dial.currentTimesWeStopAtZero, 1, "Should stop at 0 for the first time")
         
         # L5 from 0 -> 95 (0 - 5 = -5, wraps to 95)
         result = dial.turnDialFromString("L5")
         self.assertEqual(result, 95, "L5 from 0 should be 95")
+        self.assertEqual(dial.currentTimesWePassedZero, 3, "Should pass 0 once when wrapping backward")
         self.assertEqual(dial.currentTimesWeStopAtZero, 1, "Stop at 0 count unchanged")
         
         # R60 from 95 -> 55 (95 + 60 = 155, wraps to 55)
         result = dial.turnDialFromString("R60")
         self.assertEqual(result, 55, "R60 from 95 should be 55")
+        self.assertEqual(dial.currentTimesWePassedZero, 4, "Should pass 0 once more when wrapping forward")
         self.assertEqual(dial.currentTimesWeStopAtZero, 1, "Stop at 0 count unchanged")
         
         # L55 from 55 -> 0 (55 - 55 = 0, no wrap)
         result = dial.turnDialFromString("L55")
         self.assertEqual(result, 0, "L55 from 55 should be 0")
+        self.assertEqual(dial.currentTimesWePassedZero, 4, "Should not pass 0 (landing on 0 doesn't count)")
         self.assertEqual(dial.currentTimesWeStopAtZero, 2, "Should stop at 0 for the second time")
         
         # L1 from 0 -> 99 (0 - 1 = -1, wraps to 99)
         result = dial.turnDialFromString("L1")
         self.assertEqual(result, 99, "L1 from 0 should be 99")
+        self.assertEqual(dial.currentTimesWePassedZero, 5, "Should pass 0 once when wrapping backward")
         self.assertEqual(dial.currentTimesWeStopAtZero, 2, "Stop at 0 count unchanged")
         
         # L99 from 99 -> 0 (99 - 99 = 0, no wrap)
         result = dial.turnDialFromString("L99")
         self.assertEqual(result, 0, "L99 from 99 should be 0")
+        self.assertEqual(dial.currentTimesWePassedZero, 5, "Should not pass 0 (landing on 0 doesn't count)")
         self.assertEqual(dial.currentTimesWeStopAtZero, 3, "Should stop at 0 for the third time")
         
         # R14 from 0 -> 14 (0 + 14 = 14, no wrap)
         result = dial.turnDialFromString("R14")
         self.assertEqual(result, 14, "R14 from 0 should be 14")
+        self.assertEqual(dial.currentTimesWePassedZero, 5, "Should not pass 0 when moving forward from 0")
         self.assertEqual(dial.currentTimesWeStopAtZero, 3, "Stop at 0 count unchanged")
         
         # L82 from 14 -> 32 (14 - 82 = -68, wraps to 32)
         result = dial.turnDialFromString("L82")
         self.assertEqual(result, 32, "L82 from 14 should be 32")
+        self.assertEqual(dial.currentTimesWePassedZero, 6, "Should pass 0 once when wrapping backward")
         self.assertEqual(dial.currentTimesWeStopAtZero, 3, "Stop at 0 count unchanged")
 
-        # assert the final count
+        # assert the zero pass count
+        self.assertEqual(dial.currentTimesWePassedZero, 6, "Total times passed zero should be 6")
         self.assertEqual(dial.currentTimesWeStopAtZero, 3, "Total times stopped at zero should be 3")
 
 if __name__ == '__main__':

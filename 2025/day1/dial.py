@@ -1,13 +1,26 @@
 
 
 currentNumber = 50
+currentTimesWePassedZero = 0
 currentTimesWeStopAtZero = 0
 
 MAX_NUMBER = 99
 
 def turnDial(steps):
-    global currentNumber, currentTimesWeStopAtZero
-    currentNumber = (currentNumber + steps) % (MAX_NUMBER + 1)
+    global currentNumber, currentTimesWePassedZero, currentTimesWeStopAtZero
+    currentNumber = (currentNumber + steps)
+
+    if steps > MAX_NUMBER or steps < -MAX_NUMBER:
+        wrap_count, normalized = divmod(currentNumber, MAX_NUMBER + 1)
+        currentNumber = normalized
+        currentTimesWePassedZero += abs(wrap_count)
+
+    if currentNumber > MAX_NUMBER:
+        currentNumber = currentNumber - (MAX_NUMBER + 1)
+        currentTimesWePassedZero += 1
+    elif currentNumber < 0:
+        currentNumber = (MAX_NUMBER + 1) + currentNumber
+        currentTimesWePassedZero += 1
 
     if currentNumber == 0:
         currentTimesWeStopAtZero += 1
@@ -32,22 +45,19 @@ def turnDialFromString(stepsStr):
 if __name__ == "__main__":
     currentNumber = 50
     print(f"The dial starts by pointing at {currentNumber}.")
-    # load from input.txt
     stepsList = []
     with open("2025/day1/Input.txt", "r") as f:
         for line in f:
             stepsList.append(line.strip())
 
-    # line count
     print(f"Total lines read: {len(stepsList)}")
     
     for steps in stepsList:
         newNumber = turnDialFromString(steps)
         print(f"The dial is rotated {steps} to point at {newNumber}.")
-        # log to a file
         with open("2025/day1/Output.log", "a") as log_file:
             log_file.write(f"The dial is rotated {steps} to point at {newNumber}.\n")
     
+    print (f"Total times passed zero: {currentTimesWePassedZero}")
     print (f"Total times stopped at zero: {currentTimesWeStopAtZero}")
     
-
