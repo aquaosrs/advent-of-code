@@ -1,0 +1,12 @@
+{
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./2025/day1",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.cwd": "${workspaceFolder}",
+    "python.testing.autoTestDiscoverOnSaveEnabled": true
+}
