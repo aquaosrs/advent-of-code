@@ -7,28 +7,37 @@ def getRange(rangeStr):
 def isInvalid(productID):
     idStr = str(productID)
     lengthOfProductId = len(idStr)
-    if lengthOfProductId % 2 == 1:
+    
+    for checkLength in range(1, lengthOfProductId // 2 + 1):
+        if checkIfDuplicatingForLength(productID, checkLength):
+            return True
+    return False
+
+def checkIfDuplicatingForLength(productID, checkLength = 2):
+    idStr = str(productID)
+    lengthOfProductId = len(idStr)
+    if lengthOfProductId < checkLength * 2:
         return False
 
-    firstHalf = idStr[:lengthOfProductId // 2]
-    secondHalf = idStr[lengthOfProductId // 2:]
+    allParts = [idStr[i:i+checkLength] for i in range(0, lengthOfProductId, checkLength)]
 
-    if firstHalf == secondHalf:
-        print(f"Product ID {productID} is invalid (both halves are equal).")
-        return True
-    return False
+    # if all parts are the same, return True
+    firstPart = allParts[0]
+    for part in allParts[1:]:
+        if part != firstPart:
+            return False
+        
+    return True
+
 
 def processRange(rangeStr):
     rangeStr = rangeStr.strip()
     productRange = getRange(rangeStr)
-    productCount = len(productRange)
-    print(f"Processing range {rangeStr}: {productCount} products.")
 
     invalidIds = []
 
     for product in productRange:
         if isInvalid(product):
-            print(f"Product {product} is invalid.")
             invalidIds.append(product)
 
     return invalidIds
