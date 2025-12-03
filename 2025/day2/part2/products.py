@@ -1,3 +1,5 @@
+import time
+
 def getRange(rangeStr):
     start_str, end_str = rangeStr.split("-")
     start = int(start_str)
@@ -43,9 +45,9 @@ def processRange(rangeStr):
     return invalidIds
 
 
-
-
 if __name__ == "__main__":
+    start_time = time.time()
+
     with open("2025/day2/Input.txt", "r") as f:
         productRanges = f.read().strip().split(",")
         
@@ -59,3 +61,7 @@ if __name__ == "__main__":
     print(f"Total invalid products found: {len(allInvalidProducts)}")
     totalInvalidSum = sum(allInvalidProducts)
     print(f"Sum of all invalid product IDs: {totalInvalidSum}")
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"\nExecution time: {elapsed_time:.4f} seconds")
