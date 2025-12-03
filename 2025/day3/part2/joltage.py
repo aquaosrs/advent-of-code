@@ -1,46 +1,57 @@
 from utils import load_input
 import time
 
-def processJoltage(joltageString): 
-    highestFirstNumber = 0
-    highestSecondNumber = 0
-
-    indexOfFirstHighest = -1
-    indexOfSecondHighest = -1
-
-    tempJoltageString = joltageString[:-1]
-
-    for char in tempJoltageString:
-        num = int(char)
-        
-        if num > highestFirstNumber:
-            highestFirstNumber = num
-            indexOfFirstHighest = joltageString.index(char)
-            
-    # sub string to after the first highest number
-    indexOfFirstHighest = joltageString.index(str(highestFirstNumber)) + 1
-    subString = joltageString[indexOfFirstHighest:]
-
-    print ("Sub String:", subString)
-        
-    for char in subString:
-        num = int(char)
-        if num > highestSecondNumber:
-            highestSecondNumber = num
-            indexOfSecondHighest = subString.index(char) + indexOfFirstHighest
-
-    result = int(f"{highestFirstNumber}{highestSecondNumber}")
-
-    # highlight the first number and second highest number in the string in green and red
-
+def highlightSelectedDigits(joltageString, selectedIndices):
+    colors = [
+        "\033[92m",  # Green
+        "\033[91m",  # Red
+        "\033[93m",  # Yellow
+        "\033[94m",  # Blue
+        "\033[95m",  # Magenta
+        "\033[96m",  # Cyan
+        "\033[97m",  # White
+        "\033[38;5;99m",   # Purple
+        "\033[38;5;208m",  # Orange
+        "\033[38;5;213m",  # Pink
+        "\033[38;5;46m",   # Bright Green
+        "\033[38;5;226m",  # Bright Yellow
+    ]
+    
+    dimGray = "\033[38;5;240m"  # dark gray
+    
     highlightedString = ""
     for i, char in enumerate(joltageString):
-        if i == indexOfFirstHighest - 1:
-            highlightedString += f"\033[92m{char}\033[0m"  # Green
-        elif i == indexOfSecondHighest:
-            highlightedString += f"\033[91m{char}\033[0m"  # Red
+        if i in selectedIndices:
+            batteryIndex = selectedIndices.index(i)
+            colorCode = colors[batteryIndex % len(colors)]
+            highlightedString += f"{colorCode}{char}\033[0m"
         else:
-            highlightedString += char
+            highlightedString += f"{dimGray}{char}\033[0m"
+    
+    return highlightedString
+
+def processJoltage(joltageString, numberOfBatteriesToTurnOn = 12): 
+    highestNumbers = [0] * numberOfBatteriesToTurnOn
+    highestIndices = [-1] * numberOfBatteriesToTurnOn
+
+    for i in range(numberOfBatteriesToTurnOn):
+        charIndexToStartFrom = 0
+        if i > 0:
+            charIndexToStartFrom = highestIndices[i - 1] + 1
+
+        tempJoltageString = joltageString[charIndexToStartFrom:len(joltageString) - (numberOfBatteriesToTurnOn - i - 1)]
+        j = charIndexToStartFrom
+        for char in tempJoltageString:
+            num = int(char)
+            if num > highestNumbers[i]:
+                highestNumbers[i] = num
+                highestIndices[i] = j
+            j += 1
+
+    resultString = ''.join(str(num) for num in highestNumbers)
+    result = int(resultString)
+
+    highlightedString = highlightSelectedDigits(joltageString, highestIndices)
 
     print("Joltage:", highlightedString, "-> Result:", result)
 
