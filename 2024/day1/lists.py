@@ -1,12 +1,5 @@
-def load_input():
-    # get current file path
-    import os
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_path = os.path.join(current_dir, "input.txt")
+from utils import load_input
 
-    with open(input_path, "r") as f:
-        lines = f.read().strip().split("\n")
-    return lines
 
 def get_lists():
     input_lines = load_input()
