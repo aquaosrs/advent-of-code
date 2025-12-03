@@ -22,17 +22,16 @@ def get_lists():
 if __name__ == "__main__":
     list1, list2 = get_lists()
     
-    list1.sort()
+    #list1.sort()
     list2.sort()
 
     print("List 1:", list1)
     print("List 2:", list2)
 
-    results = []
-    for a, b in zip(list1, list2):
-        results.append(abs(a - b))
+    result = 0
 
-    print ("Results:", results)
-
-    sum_result = sum(results)
-    print("Sum of results:", sum_result)
+    for i in range(len(list1)):
+        countInList2 = list2.count(list1[i])
+        result += (countInList2 * list1[i])
+    
+    print ("Final Result:", result)
