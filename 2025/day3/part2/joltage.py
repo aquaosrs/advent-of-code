@@ -17,6 +17,7 @@ def processJoltage(joltageString):
             highestFirstNumber = num
             indexOfFirstHighest = joltageString.index(char)
             
+    # sub string to after the first highest number
     indexOfFirstHighest = joltageString.index(str(highestFirstNumber)) + 1
     subString = joltageString[indexOfFirstHighest:]
 
@@ -29,6 +30,8 @@ def processJoltage(joltageString):
             indexOfSecondHighest = subString.index(char) + indexOfFirstHighest
 
     result = int(f"{highestFirstNumber}{highestSecondNumber}")
+
+    # highlight the first number and second highest number in the string in green and red
 
     highlightedString = ""
     for i, char in enumerate(joltageString):
