@@ -71,4 +71,8 @@ if __name__ == "__main__":
     
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"\nExecution time: {elapsed_time:.4f} seconds")
+
+# color green for execution time
+print(f"\033[92m\nExecution time: {elapsed_time:.4f} seconds\033[0m")
+print()
+    

@@ -2,3 +2,4 @@
 *.pyc
 /2025/day1/__pycache__
 2025/day1/Output.log
+/aoc_utils.egg-info
