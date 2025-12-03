@@ -1,4 +1,5 @@
 import time
+from multiprocessing import Pool, cpu_count
 
 def getRange(rangeStr):
     start_str, end_str = rangeStr.split("-")
@@ -53,8 +54,14 @@ if __name__ == "__main__":
         
     allInvalidProducts = []
 
-    for rangeStr in productRanges:
-        invalidProducts = processRange(rangeStr)
+    # for rangeStr in productRanges:
+    #     invalidProducts = processRange(rangeStr)
+    #     print(f"Invalid products in range {rangeStr}: {invalidProducts}")
+    #     allInvalidProducts.extend(invalidProducts)
+
+    with Pool(cpu_count()) as pool:
+        results = pool.map(processRange, [r.strip() for r in productRanges])
+    for rangeStr, invalidProducts in zip([r.strip() for r in productRanges], results):
         print(f"Invalid products in range {rangeStr}: {invalidProducts}")
         allInvalidProducts.extend(invalidProducts)
 
