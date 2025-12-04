@@ -51,9 +51,9 @@ def processJoltage(joltageString, numberOfBatteriesToTurnOn = 12):
     resultString = ''.join(str(num) for num in highestNumbers)
     result = int(resultString)
 
-    highlightedString = highlightSelectedDigits(joltageString, highestIndices)
+    #highlightedString = highlightSelectedDigits(joltageString, highestIndices)
 
-    print("Joltage:", highlightedString, "-> Result:", result)
+    #print("Joltage:", highlightedString, "-> Result:", result)
 
     return result
 
