@@ -1,4 +1,5 @@
 from utils import load_input
+import time
 
 def loadBeamGrid():
     result = load_input()
@@ -65,6 +66,8 @@ def calculateTimelinesFromMaths(maths_format):
     return total
 
 if __name__ == "__main__":
+    start_time = time.time()
+    
     originalGrid = loadBeamGrid()    
     mathsFormat = convertToMathsFormat(originalGrid)
     
@@ -83,3 +86,6 @@ if __name__ == "__main__":
     print(f"TOTAL UNIQUE TIMELINES: {totalTimelines}")
     print("==============================================================")
     
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"\nExecution time: {elapsed_time:.4f} seconds")
