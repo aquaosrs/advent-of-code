@@ -1,5 +1,4 @@
 from utils import load_input
-import time
 
 def loadBeamGrid():
     result = load_input()
@@ -8,72 +7,79 @@ def loadBeamGrid():
         grid.append(list(row))
     return grid
 
-def drawBeamGrid(grid, rowToHighlight=None, colToHighlight=None):
-    for i, row in enumerate(grid):
-        outputRow = ''
+def convertToMathsFormat(originalGrid):
+    # Start position
+    start_pos = None
+    for i, row in enumerate(originalGrid):
         for j, cell in enumerate(row):
-            if i == rowToHighlight and j == colToHighlight:
-                outputRow += f'\033[92m{cell}\033[0m'  # Green color
-            elif i == rowToHighlight and colToHighlight is None:
-                outputRow += f'\033[93m{cell}\033[0m'  # Yellow color
-            elif cell == 'S':
-                outputRow += f'\033[91m{cell}\033[0m'  # Red color
-            else:
-                outputRow += cell
-        print(outputRow)
-    print()
+            if cell == 'S':
+                start_pos = (i, j)
+                break
+        if start_pos:
+            break
 
-def drawBeamGridTimeline(gridTimeline, rowToHighlight=None, colToHighlight=None):
-    for t, grid in enumerate(gridTimeline):
-        print(f"Time: {t}")
-        drawBeamGrid(grid, rowToHighlight, colToHighlight)
-
-def isAboveBeam(cell):
-    return cell == 'S' or cell == '|'
-
-def processBeamGrid(grid):
-    height = len(grid)
-
-    timelineGrids = [grid]
-
-    timelineGridsToBeAddedOnNextIteration = []
-
-    for heightLevel in range(height):
-        if heightLevel == 0:
-            continue  # skip the top level
-        timelineGrids.extend(timelineGridsToBeAddedOnNextIteration)
-        timelineGridsToBeAddedOnNextIteration = []
-
-        start_time = time.time()
-
-        # for each cell in the row
-        for timeLineGrid in timelineGrids:
-            for j, cell in enumerate(timeLineGrid[heightLevel]):
-                if isAboveBeam(timeLineGrid[heightLevel - 1][j]):
-                    if cell == '.':
-                        timeLineGrid[heightLevel][j] = '|'
-                    elif cell == '^':
-                        newTimelineGrid = [row[:] for row in timeLineGrid]
-                        # in the current timeline grid, make the beam go left
-                        if j > 0:
-                            timeLineGrid[heightLevel][j - 1] = '|'
-                        # in the new timeline grid, make the beam go right
-                        if j < len(newTimelineGrid[heightLevel]) - 1:
-                            newTimelineGrid[heightLevel][j + 1] = '|'
-                            # add the new timeline grid to the list of timeline grids
-                            timelineGridsToBeAddedOnNextIteration.append(newTimelineGrid)
+    # Identify splits
+    splits = []
+    for i, row in enumerate(originalGrid):
+        for j, cell in enumerate(row):
+            if cell == '^':
+                splits.append((i, j))
+    
+    levels = {}
+    levels[0] = {start_pos[1]: 1}  # Start with 1 timeline at starting column
+    
+    for row_index in range(len(originalGrid) - 1):
+        next_row = originalGrid[row_index + 1]
+                    
+        next_level = {}
         
-        elapsed_time = time.time() - start_time
-        print(f"Processing height level {heightLevel}/{height} - completed in {elapsed_time:.3f} seconds")
+        for col, timeline_count in levels[row_index].items():
+            next_cell = next_row[col]
+            
+            if next_cell == '^':
+                left_col = col - 1
+                right_col = col + 1
+                if left_col >= 0:
+                    next_level[left_col] = next_level.get(left_col, 0) + timeline_count
+                if right_col < len(next_row):
+                    next_level[right_col] = next_level.get(right_col, 0) + timeline_count
+            elif next_cell == '.' or next_cell == '|':
+                # Continue straight down
+                next_level[col] = next_level.get(col, 0) + timeline_count
+        
+        if next_level:
+            levels[row_index + 1] = next_level
     
-    return len(timelineGrids)
+    return {
+        'start': start_pos,
+        'splits': splits,
+        'levels': levels,
+        'num_splits': len(splits)
+    }
+
+def calculateTimelinesFromMaths(maths_format):    
+    max_level = max(maths_format['levels'].keys())
+    final_level = maths_format['levels'][max_level]
     
-                
+    total = sum(final_level.values())
+    return total
 
 if __name__ == "__main__":
-    # clear the terminal
-    print("\033c", end="")
-    print ("Beam Grid Analysis")
-    beamGrid = loadBeamGrid()
-    timelineGrids = processBeamGrid(beamGrid)
-    print(f"Timeline counts: {timelineGrids}")
+    originalGrid = loadBeamGrid()    
+    mathsFormat = convertToMathsFormat(originalGrid)
+    
+    print(f"\nStarting position: {mathsFormat['start']}")
+    print(f"Total splits: {mathsFormat['num_splits']}")
+    print(f"\nTimeline progression by level (row):")
+    print("------------------------------------------------")
+    
+    for level in sorted(mathsFormat['levels'].keys()):
+        positions = mathsFormat['levels'][level]
+        total_at_level = sum(positions.values())
+        print(f"Row {level:2d}: {total_at_level:4d} timelines at columns {dict(positions)}")
+    
+    totalTimelines = calculateTimelinesFromMaths(mathsFormat)
+    print("\n==============================================================")
+    print(f"TOTAL UNIQUE TIMELINES: {totalTimelines}")
+    print("==============================================================")
+    
