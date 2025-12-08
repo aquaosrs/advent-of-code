@@ -5,6 +5,7 @@ class JunctionBox:
         self.x = x
         self.y = y
         self.z = z
+        self.circuit = None 
 
     def __hash__(self):
         return hash((self.x, self.y, self.z))
@@ -27,26 +28,34 @@ class JunctionBox:
                 closest_box = box
         return closest_box, closest_distance
     
-def loadCircuits():
+def loadBoxes():
     result = load_input()
     junction_boxes = []
     for line in result:
         x, y, z = map(int, line.split(','))
         junction_boxes.append(JunctionBox(x, y, z))
-
-    circuits = [Circuit(box) for box in junction_boxes]
-    return circuits
+    return junction_boxes
     
 class Circuit:
+    def __init__(self):
+        self.junction_boxes = []
+
     def __init__(self, junction_box):
         self.junction_boxes = [junction_box]
+        junction_box.circuit = self 
 
     def get_junction_boxes(self) -> list[JunctionBox]:
         return self.junction_boxes
 
     def combine_circuits(self, other_circuit):
         self.junction_boxes.extend(other_circuit.junction_boxes)
+        for box in other_circuit.junction_boxes:
+            box.circuit = self
         del other_circuit
+
+    def add_junction_box(self, junction_box: JunctionBox):
+        self.junction_boxes.append(junction_box)
+        junction_box.circuit = self 
 
     def find_closest_circuit(self, circuits: list['Circuit']):
         closest_circuit = None
@@ -65,12 +74,26 @@ class Circuit:
         return f'Circuit with {len(self.junction_boxes)} junction boxes'
 
 if __name__ == "__main__":
-    circuits = loadCircuits()
-    for circuit in circuits:
-        closest_circuit, distance = circuit.find_closest_circuit(circuits)
-        circuit.combine_circuits(closest_circuit)
+    circuits = []
+    boxes: list[JunctionBox] = loadBoxes()
+    for box in boxes:
+        if box.circuit is None:
+            circuit = Circuit(box)
+            circuits.append(circuit)
+        else:
+            circuit = box.circuit
+        
+        # find nearest box to box
+        closest_box, distance = box.find_closest(boxes)
+        if closest_box.circuit is None:
+            circuit.add_junction_box(closest_box)
+        elif closest_box.circuit != circuit:
+            other_circuit = closest_box.circuit
+            circuit.combine_circuits(other_circuit)
+            circuits.remove(other_circuit)
 
-    circuits.sort(key=lambda c: len(c.junction_boxes), reverse=True)
+    # sort circuits by box count
+    circuits.sort(key=lambda c: len(c.get_junction_boxes()), reverse=True)
 
     for circuit in circuits:
         print(f"{circuit}")
