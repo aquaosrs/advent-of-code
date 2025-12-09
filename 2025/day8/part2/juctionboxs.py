@@ -93,60 +93,50 @@ def totalConnections(circuits: list[Circuit]) -> int:
 if __name__ == "__main__":
     min_distance = 0.0
     junction_boxes = parse_input()
-    print(f"Total junction boxes to process: {len(junction_boxes)}")
     circuits: list[Circuit] = []
 
-    # Start by putting each box in its own circuit
-    for box in junction_boxes:
-        new_circuit = Circuit([box])
+    # add 2 boxes to 2 circuits
+    for i in range(2):
+        new_circuit = Circuit([junction_boxes[i]])
         circuits.append(new_circuit)
 
     index = 0
 
-    while len(circuits) > 1:
+    while len(circuits) != 1:
         print (f"Starting iteration {index}, current number of circuits: {len(circuits)}")
         index += 1
         if index % 100 == 0:
             print(f"Iteration {index}, current number of circuits: {len(circuits)}")
+        closest_boxes = find2ClosestBoxes(junction_boxes, min_distance)
         
-        try:
+        if closest_boxes is None:
+            # No more pairs found with current min_distance, reset it
+            min_distance = 0.0
             closest_boxes = find2ClosestBoxes(junction_boxes, min_distance)
-            
             if closest_boxes is None:
-                # No more pairs found with current min_distance
-                # Need to connect separate circuits - find closest boxes between different circuits
-                print(f"No more pairs found, connecting circuits... Current circuits: {len(circuits)}")
-                closest_boxes = find_closest_boxes_between_circuits(circuits)
-                if closest_boxes is None:
-                    # This shouldn't happen, but if it does, break
-                    print("ERROR: No pairs found between circuits")
-                    break
-                min_distance = 0.0  # Reset min_distance for next iteration
-            else:
-                min_distance = closest_boxes[0].distance_to(closest_boxes[1])
+                # Still no pairs found, all boxes must be in circuits
+                break
+        
+        min_distance = closest_boxes[0].distance_to(closest_boxes[1])
 
-            closest_boxes_circuits = [circuit for circuit in circuits if circuit.contains(closest_boxes[0]) or circuit.contains(closest_boxes[1])]
-            if len(closest_boxes_circuits) == 2:
-                closest_boxes_circuits[0].combine(closest_boxes_circuits[1])
-                circuits.remove(closest_boxes_circuits[1])
-            elif len(closest_boxes_circuits) == 1:
-                closest_boxes_circuits[0].add_junction_box(closest_boxes[0] if closest_boxes_circuits[0].contains(closest_boxes[1]) else closest_boxes[1])
-            else:
-                new_circuit = Circuit([closest_boxes[0], closest_boxes[1]])
-                circuits.append(new_circuit)
-        except Exception as e:
-            print(f"Exception in iteration {index}: {e}")
-            import traceback
-            traceback.print_exc()
-            break
+        closest_boxes_circuits = [circuit for circuit in circuits if circuit.contains(closest_boxes[0]) or circuit.contains(closest_boxes[1])]
+        if len(closest_boxes_circuits) == 2:
+            closest_boxes_circuits[0].combine(closest_boxes_circuits[1])
+            circuits.remove(closest_boxes_circuits[1])
+        elif len(closest_boxes_circuits) == 1:
+            closest_boxes_circuits[0].add_junction_box(closest_boxes[0] if closest_boxes_circuits[0].contains(closest_boxes[1]) else closest_boxes[1])
+        else:
+            new_circuit = Circuit([closest_boxes[0], closest_boxes[1]])
+            circuits.append(new_circuit)
 
 
-    print(f"Loop ended at iteration {index} with {len(circuits)} circuits")
-    
-    # Count how many boxes are in circuits
-    boxes_in_circuits = sum(len(c.junction_boxes) for c in circuits)
-    print(f"Boxes in circuits: {boxes_in_circuits} out of {len(junction_boxes)}")
-    
+    index = 0
+    for box in junction_boxes:
+        in_circuit = any(circuit.contains(box) for circuit in circuits)
+        if not in_circuit:
+            new_circuit = Circuit([box])
+            circuits.append(new_circuit)
+
     circuits.sort(key=lambda c: len(c.junction_boxes), reverse=True)
 
     print(f"Total circuits: {len(circuits)}")
